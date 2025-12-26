@@ -30,7 +30,7 @@ export default function Footer() {
             </div>
 
             <div className="flex gap-6">
-              <FooterLink href="#" icon={<Github className="w-5 h-5" />} label="Github" />
+              <FooterLink href="https://github.com/abdhesh369" icon={<Github className="w-5 h-5" />} label="Github" />
               <FooterLink href="#" icon={<Linkedin className="w-5 h-5" />} label="LinkedIn" />
               <FooterLink href="#" icon={<Twitter className="w-5 h-5" />} label="Twitter" />
               <FooterLink href="#" icon={<Instagram className="w-5 h-5" />} label="Instagram" />
@@ -41,7 +41,7 @@ export default function Footer() {
 
         <div className="border-t border-border mt-8 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
           <p>© {currentYear} All rights reserved.</p>
-          <p>Designed & Built with React & Tailwind</p>
+          <p>Designed & Built by Myself.</p>
         </div>
       </div>
     </footer>

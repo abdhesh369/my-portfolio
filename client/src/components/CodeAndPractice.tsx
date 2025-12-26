@@ -1,8 +1,43 @@
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { Github, ExternalLink, Activity, GitBranch, Terminal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+type GitHubEvent = {
+  type: string;
+  created_at: string;
+  repo: { name: string };
+  payload: {
+    commits: { message: string }[];
+  };
+};
+
+type ActivityItem = {
+  task: string;
+  time: string;
+};
+
 export default function CodeAndPractice() {
+  const [events, setEvents] = useState<ActivityItem[]>([]);
+
+  useEffect(() => {
+    fetch("https://api.github.com/users/abdhesh369/events/public")
+      .then(res => res.json())
+      .then((data: GitHubEvent[]) => {
+        const filtered = data
+          .filter(e => e.type === "PushEvent")
+          .flatMap(e =>
+            e.payload.commits.map(c => ({
+              task: c.message,
+              time: new Date(e.created_at).toLocaleString(),
+            }))
+          )
+          .slice(0, 3);
+        setEvents(filtered);
+      })
+      .catch(err => console.error("GitHub fetch failed:", err));
+  }, []);
+
   return (
     <section id="code-practice" className="section-container">
       <div className="text-center mb-16">
@@ -12,7 +47,7 @@ export default function CodeAndPractice() {
 
       <div className="max-w-5xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
@@ -39,11 +74,11 @@ export default function CodeAndPractice() {
                 <p className="text-muted-foreground">Experiments with microservices, CLI tools, and system optimization.</p>
               </div>
             </div>
-            
+
             <div className="pt-4">
-              <a 
-                href="https://github.com" 
-                target="_blank" 
+              <a
+                href="https://github.com/abdhesh369/"
+                target="_blank"
                 rel="noopener noreferrer"
               >
                 <Button size="lg" className="gap-2 rounded-xl h-12 px-8 font-bold shadow-lg shadow-primary/20">
@@ -55,7 +90,7 @@ export default function CodeAndPractice() {
             </div>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
@@ -78,23 +113,22 @@ export default function CodeAndPractice() {
                 </div>
               </div>
 
-              {/* Mock Activity List for Clean UI */}
               <div className="space-y-6">
-                {[
-                  { task: "Refactored state management in TU-Portal", time: "2 hours ago" },
-                  { task: "Added unit tests for 8085 assembler", time: "1 day ago" },
-                  { task: "Optimized PostgreSQL query indexing", time: "3 days ago" },
-                ].map((item, i) => (
-                  <div key={i} className="flex gap-4 items-center">
-                    <div className="w-2 h-2 rounded-full bg-primary" />
-                    <div className="flex-1">
-                      <div className="text-sm font-medium">{item.task}</div>
-                      <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{item.time}</div>
+                {
+                  events.length > 0 ? events.map((item, i) => (
+                    <div key={i} className="flex gap-4 items-center">
+                      <div className="w-2 h-2 rounded-full bg-primary" />
+                      <div className="flex-1">
+                        <div className="text-sm font-medium">{item.task}</div>
+                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{item.time}</div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )) : (
+                    <div className="text-sm text-muted-foreground">No recent activity found.</div>
+                  )
+                }
               </div>
-              
+
               <div className="mt-8 pt-8 border-t border-border/50">
                 <div className="flex gap-2">
                   {[...Array(14)].map((_, i) => (

@@ -13,7 +13,6 @@ export default function Projects() {
   const categories = ["All", "System", "Academic", "Backend", "Utility"];
 
   const filteredProjects = projects?.filter(p => {
-    // Requirements: Exclude Netflix/Amazon clones if they exist (hypothetically)
     const isExcluded = p.title.toLowerCase().includes("netflix") || p.title.toLowerCase().includes("amazon");
     if (isExcluded) return false;
 

@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useSkills } from "@/hooks/use-portfolio";
 import { Code, Server, Cpu, Layers, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import profileImg from "@assets/stock_images/professional_portrai_ff97de10.jpg";
+import profileImg from "@assets/images/Myphoto.jpg";
 
 export default function About() {
   const { data: skills, isLoading } = useSkills();
