@@ -1,6 +1,9 @@
 // shared/schema.ts
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { z } from "zod";
 
+// ===== PROJECTS =====
 export const projects = sqliteTable("projects", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   title: text("title").notNull(),
@@ -27,8 +30,11 @@ export type Project = Omit<ProjectFromDB, 'techStack'> & {
 
 export type InsertProject = typeof projects.$inferInsert;
 
-// ... rest of your schema (skills, experiences, messages)
+// Zod schemas for validation
+export const projectSchema = createSelectSchema(projects);
+export const insertProjectSchema = createInsertSchema(projects);
 
+// ===== SKILLS =====
 export const skills = sqliteTable("skills", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
@@ -39,6 +45,11 @@ export const skills = sqliteTable("skills", {
 export type Skill = typeof skills.$inferSelect;
 export type InsertSkill = typeof skills.$inferInsert;
 
+// Zod schemas for validation
+export const skillSchema = createSelectSchema(skills);
+export const insertSkillSchema = createInsertSchema(skills);
+
+// ===== EXPERIENCES =====
 export const experiences = sqliteTable("experiences", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   role: text("role").notNull(),
@@ -51,6 +62,11 @@ export const experiences = sqliteTable("experiences", {
 export type Experience = typeof experiences.$inferSelect;
 export type InsertExperience = typeof experiences.$inferInsert;
 
+// Zod schemas for validation
+export const experienceSchema = createSelectSchema(experiences);
+export const insertExperienceSchema = createInsertSchema(experiences);
+
+// ===== MESSAGES =====
 export const messages = sqliteTable("messages", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
@@ -64,3 +80,10 @@ export const messages = sqliteTable("messages", {
 
 export type Message = typeof messages.$inferSelect;
 export type InsertMessage = typeof messages.$inferInsert;
+
+// Zod schemas for validation
+export const messageSchema = createSelectSchema(messages);
+export const insertMessageSchema = createInsertSchema(messages).omit({
+  id: true,
+  createdAt: true,
+});
