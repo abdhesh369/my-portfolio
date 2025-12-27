@@ -10,22 +10,13 @@ import {
   Cpu, 
   Server, 
   Atom, 
-  GitBranch, 
-  Braces,
-  Zap,
-  Box,
-  Settings
+  GitBranch,
+  Braces
 } from "lucide-react";
+import type { Skill } from "@shared/schema";
+import { api } from "@shared/routes";
 
-// Types
-type Skill = {
-  id: number;
-  name: string;
-  category: string;
-  icon: string;
-};
-
-// Icon mapping
+// Icon mapping (removed Snake, added Braces as replacement)
 const iconMap: Record<string, any> = {
   Code, 
   Code2, 
@@ -38,10 +29,7 @@ const iconMap: Record<string, any> = {
   Atom, 
   GitBranch,
   Braces,
-  Zap,
-  Box,
-  Settings,
-  Snake: Braces // Fallback for Snake to Braces
+  Snake: Braces // Fallback
 };
 
 // Animation variants
@@ -151,11 +139,16 @@ const CategorySection = ({ category, skills }: { category: string; skills: Skill
   </div>
 );
 
-// Main Component
+// Main Component - Connected to API
 export default function Skills() {
-  // Fetch skills from API
+  // Fetch skills from API using the hook
   const { data: skills = [], isLoading, error } = useQuery<Skill[]>({
-    queryKey: ['/api/skills'],
+    queryKey: ['skills'],
+    queryFn: async () => {
+      const res = await fetch(api.skills.list.path);
+      if (!res.ok) throw new Error('Failed to fetch skills');
+      return api.skills.list.responses[200].parse(await res.json());
+    }
   });
 
   if (isLoading) {

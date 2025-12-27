@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import About from "@/components/About";
+import Skills from "@/components/Skills";
 import WhyHireMe from "@/components/WhyHireMe";
 import EngineeringMindset from "@/components/EngineeringMindset";
 import Projects from "@/components/Projects";
@@ -25,12 +26,13 @@ export default function Home() {
         className="fixed top-0 left-0 right-0 h-1 bg-primary z-[100] origin-left"
         style={{ scaleX }}
       />
-      
+
       <Navbar />
-      
+
       <main>
         <Hero />
         <About />
+        <Skills />
         <WhyHireMe />
         <EngineeringMindset />
         <Projects />
@@ -38,7 +40,7 @@ export default function Home() {
         <Experience />
         <Contact />
       </main>
-      
+
       <Footer />
     </div>
   );
