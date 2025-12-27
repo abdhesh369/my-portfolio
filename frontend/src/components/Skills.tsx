@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
 import { 
   Code, 
   Code2, 
@@ -14,7 +13,7 @@ import {
   Braces
 } from "lucide-react";
 import type { Skill } from "@shared/schema";
-import { api } from "@shared/routes";
+import { useSkills } from "@/hooks/use-portfolio";
 
 // Icon mapping (removed Snake, added Braces as replacement)
 const iconMap: Record<string, any> = {
@@ -142,31 +141,31 @@ const CategorySection = ({ category, skills }: { category: string; skills: Skill
 // Main Component - Connected to API
 export default function Skills() {
   // Fetch skills from API using the hook
-  const { data: skills = [], isLoading, error } = useQuery<Skill[]>({
-    queryKey: ['skills'],
-    queryFn: async () => {
-      const res = await fetch(api.skills.list.path);
-      if (!res.ok) throw new Error('Failed to fetch skills');
-      return api.skills.list.responses[200].parse(await res.json());
-    }
-  });
+  const { data: skills, isLoading, error } = useSkills();
 
   if (isLoading) {
     return <SkillsSkeleton />;
   }
 
   if (error) {
+    console.error('Skills fetch error:', error);
     return (
       <section className="section-container">
         <div className="text-center">
-          <p className="text-destructive">Failed to load skills. Please try again later.</p>
+          <p className="text-destructive mb-2">Failed to load skills.</p>
+          <p className="text-sm text-muted-foreground">
+            {error instanceof Error ? error.message : 'Please try again later.'}
+          </p>
         </div>
       </section>
     );
   }
 
+  // Ensure skills is an array
+  const skillsArray = skills || [];
+
   // Group skills by category
-  const groupedSkills = skills.reduce((acc, skill) => {
+  const groupedSkills = skillsArray.reduce((acc, skill) => {
     if (!acc[skill.category]) acc[skill.category] = [];
     acc[skill.category].push(skill);
     return acc;
@@ -205,17 +204,23 @@ export default function Skills() {
       </div>
       
       <div className="max-w-6xl mx-auto">
-        {categories.map((category) => (
-          <CategorySection 
-            key={category} 
-            category={category} 
-            skills={groupedSkills[category]} 
-          />
-        ))}
+        {categories.length > 0 ? (
+          categories.map((category) => (
+            <CategorySection 
+              key={category} 
+              category={category} 
+              skills={groupedSkills[category] || []} 
+            />
+          ))
+        ) : (
+          <div className="text-center py-20 text-muted-foreground">
+            <p>No skills available at the moment.</p>
+          </div>
+        )}
       </div>
 
       {/* Skill count badge */}
-      {skills.length > 0 && (
+      {skillsArray.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -225,7 +230,7 @@ export default function Skills() {
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium">
             <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-            {skills.length} Skills & Technologies
+            {skillsArray.length} Skills & Technologies
           </div>
         </motion.div>
       )}

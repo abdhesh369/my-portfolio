@@ -14,27 +14,44 @@ export async function registerRoutes(
 
   // GET /projects
   app.get(api.projects.list.path, async (_req, res) => {
-    const data = await storage.getProjects();
-
-    // Parse techStack JSON string to array
-    const parsedData = data.map(project => ({
-      ...project,
-      techStack: JSON.parse(project.techStack) as string[],
-    }));
-
-    res.json(parsedData);
+    try {
+      // getProjects() already parses techStack from JSON string to array
+      const data = await storage.getProjects();
+      res.json(data);
+    } catch (err) {
+      console.error("Error fetching projects:", err);
+      console.error("Error details:", err instanceof Error ? err.stack : String(err));
+      res.status(500).json({ 
+        message: "Failed to fetch projects",
+        error: err instanceof Error ? err.message : String(err)
+      });
+    }
   });
 
   // GET /skills
   app.get(api.skills.list.path, async (_req, res) => {
-    const data = await storage.getSkills();
-    res.json(data);
+    try {
+      const data = await storage.getSkills();
+      res.json(data);
+    } catch (err) {
+      console.error("Error fetching skills:", err);
+      console.error("Error details:", err instanceof Error ? err.stack : String(err));
+      res.status(500).json({ 
+        message: "Failed to fetch skills",
+        error: err instanceof Error ? err.message : String(err)
+      });
+    }
   });
 
   // GET /experiences
   app.get(api.experiences.list.path, async (_req, res) => {
-    const data = await storage.getExperiences();
-    res.json(data);
+    try {
+      const data = await storage.getExperiences();
+      res.json(data);
+    } catch (err) {
+      console.error("Error fetching experiences:", err);
+      res.status(500).json({ message: "Failed to fetch experiences" });
+    }
   });
 
   // POST /messages
@@ -68,8 +85,16 @@ export async function registerRoutes(
 
 async function seedDatabase() {
   try {
-    const existingProjects = await storage.getProjects();
-    console.log("Existing projects:", existingProjects.length);
+    // Check if tables exist by trying to query them
+    let existingProjects: any[] = [];
+    try {
+      existingProjects = await storage.getProjects();
+      console.log("Existing projects:", existingProjects.length);
+    } catch (error) {
+      console.log("Tables may not exist yet. Run 'npm run db:push' to create them.");
+      // If tables don't exist, we can't seed. The user needs to run db:push first.
+      return;
+    }
 
     if (existingProjects.length > 0) return;
 

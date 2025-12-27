@@ -12,13 +12,33 @@ async function fetchAndParse<T>(
   schema: { parse: (data: unknown) => T },
   errorMessage: string
 ): Promise<T> {
-  const res = await fetch(path);
+  try {
+    const res = await fetch(path);
 
-  if (!res.ok) {
-    throw new Error(`${errorMessage} (${res.status})`);
+    if (!res.ok) {
+      const errorText = await res.text();
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { message: errorText };
+      }
+      throw new Error(errorData.message || `${errorMessage} (${res.status})`);
+    }
+
+    const jsonData = await res.json();
+    return schema.parse(jsonData);
+  } catch (error) {
+    if (error instanceof Error) {
+      // If it's already an Error, re-throw it
+      throw error;
+    }
+    // Handle network errors or other issues
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error('Network error: Unable to connect to the server. Please make sure the backend is running.');
+    }
+    throw new Error(`${errorMessage}: ${String(error)}`);
   }
-
-  return schema.parse(await res.json());
 }
 
 /* ---------------------------------- */

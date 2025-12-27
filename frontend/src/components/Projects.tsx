@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 
 export default function Projects() {
-  const { data: projects, isLoading } = useProjects();
+  const { data: projects, isLoading, error } = useProjects();
   const [filter, setFilter] = useState("All");
 
   const categories = ["All", "System", "Academic", "Backend", "Utility"];
@@ -164,7 +164,16 @@ export default function Projects() {
         </motion.div>
       )}
 
-      {filteredProjects.length === 0 && !isLoading && (
+      {error && (
+        <div className="text-center py-20">
+          <p className="text-destructive mb-2">Failed to load projects.</p>
+          <p className="text-sm text-muted-foreground">
+            {error instanceof Error ? error.message : 'Please try again later.'}
+          </p>
+        </div>
+      )}
+
+      {filteredProjects.length === 0 && !isLoading && !error && (
         <div className="text-center py-20 text-muted-foreground">
           <p>No projects found in this category.</p>
         </div>
