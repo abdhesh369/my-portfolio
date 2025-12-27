@@ -21,7 +21,13 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   async getProjects(): Promise<Project[]> {
-    return db.select().from(projects);
+    const result = await db.select().from(projects);
+    
+    // Parse techStack from JSON string to array
+    return result.map(project => ({
+      ...project,
+      techStack: JSON.parse(project.techStack) as string[]
+    }));
   }
 
   async getSkills(): Promise<Skill[]> {

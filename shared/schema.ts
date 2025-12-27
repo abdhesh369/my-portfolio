@@ -1,17 +1,11 @@
 // shared/schema.ts
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
-import { createInsertSchema, createSelectSchema } from "drizzle-zod";
-import { z } from "zod";
-
-/* ---------------------------------- */
-/* Tables */
-/* ---------------------------------- */
 
 export const projects = sqliteTable("projects", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   title: text("title").notNull(),
   description: text("description").notNull(),
-  techStack: text("tech_stack").notNull(), // store as JSON string
+  techStack: text("tech_stack").notNull(), // Stored as JSON string in DB
   imageUrl: text("image_url").notNull(),
   githubUrl: text("github_url"),
   liveUrl: text("live_url"),
@@ -23,12 +17,27 @@ export const projects = sqliteTable("projects", {
   learnings: text("learnings"),
 });
 
+// Infer the DB type (techStack is string here)
+type ProjectFromDB = typeof projects.$inferSelect;
+
+// Export the application type with parsed techStack
+export type Project = Omit<ProjectFromDB, 'techStack'> & {
+  techStack: string[]; // Array in application code
+};
+
+export type InsertProject = typeof projects.$inferInsert;
+
+// ... rest of your schema (skills, experiences, messages)
+
 export const skills = sqliteTable("skills", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
   category: text("category").notNull(),
-  icon: text("icon"),
+  icon: text("icon").notNull(),
 });
+
+export type Skill = typeof skills.$inferSelect;
+export type InsertSkill = typeof skills.$inferInsert;
 
 export const experiences = sqliteTable("experiences", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -39,57 +48,19 @@ export const experiences = sqliteTable("experiences", {
   type: text("type").notNull(),
 });
 
+export type Experience = typeof experiences.$inferSelect;
+export type InsertExperience = typeof experiences.$inferInsert;
+
 export const messages = sqliteTable("messages", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
   email: text("email").notNull(),
-  phone: text("phone"),
+  subject: text("subject").notNull(),
   message: text("message").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
 });
 
-/* ---------------------------------- */
-/* Select Schemas */
-/* ---------------------------------- */
-
-export const projectSchema = createSelectSchema(projects);
-export const skillSchema = createSelectSchema(skills);
-export const experienceSchema = createSelectSchema(experiences);
-export const messageSchema = createSelectSchema(messages);
-
-/* ---------------------------------- */
-/* Insert Schemas (with validation) */
-/* ---------------------------------- */
-
-export const insertProjectSchema = createInsertSchema(projects)
-  .omit({ id: true })
-  .extend({
-    techStack: z.array(z.string()), // convert array to JSON when inserting
-  });
-
-export const insertSkillSchema = createInsertSchema(skills).omit({ id: true });
-
-export const insertExperienceSchema = createInsertSchema(experiences).omit({ id: true });
-
-export const insertMessageSchema = createInsertSchema(messages)
-  .omit({ id: true })
-  .extend({
-    email: z.string().email(),
-    name: z.string().min(1),
-    message: z.string().min(1),
-  });
-
-/* ---------------------------------- */
-/* Types */
-/* ---------------------------------- */
-
-export type Project = typeof projects.$inferSelect & { techStack: string[] };
-export type InsertProject = z.infer<typeof insertProjectSchema>;
-
-export type Skill = typeof skills.$inferSelect;
-export type InsertSkill = z.infer<typeof insertSkillSchema>;
-
-export type Experience = typeof experiences.$inferSelect;
-export type InsertExperience = z.infer<typeof insertExperienceSchema>;
-
 export type Message = typeof messages.$inferSelect;
-export type InsertMessage = z.infer<typeof insertMessageSchema>;
+export type InsertMessage = typeof messages.$inferInsert;
