@@ -8,9 +8,11 @@
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
-      "@shared/*": ["../shared/*"]
+      "@/*": ["./frontend/src/*"],
+      "@shared/*": ["./shared/*"],
+      "@assets/*": ["./attached_assets/*"]
     }
   },
-  "include": ["**/*.ts", "../shared/**/*.ts"],
-  "exclude": ["dist"]
+  "include": ["**/*.ts", "**/*.tsx", "./shared/**/*.ts", "./frontend/**/*.ts", "./frontend/**/*.tsx"],
+  "exclude": ["dist", "node_modules"]
 }

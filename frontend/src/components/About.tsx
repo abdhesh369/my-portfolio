@@ -1,35 +1,7 @@
 import { motion } from "framer-motion";
-import { useSkills } from "@/hooks/use-portfolio";
-import { Code, Server, Cpu, Layers, Home } from "lucide-react";
-import { Button } from "@/components/ui/button";
-
-const profileImg = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=500&fit=crop";
+import profileImg from "../../../attached_assets/images/Myphoto.jpg";
 
 export default function About() {
-  const { data: skills, isLoading } = useSkills();
-
-  const scrollToHero = () => {
-    const element = document.getElementById('hero');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 }
-  };
-
   return (
     <section id="about" className="section-container bg-muted/30 scroll-mt-20">
       <div className="text-center mb-16 relative">
@@ -37,7 +9,7 @@ export default function About() {
         <div className="h-1.5 w-20 bg-primary mx-auto rounded-full" />
       </div>
 
-      <div className="max-w-4xl mx-auto space-y-16">
+      <div className="max-w-4xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -48,9 +20,9 @@ export default function About() {
           <div className="relative w-full max-w-sm mx-auto group">
             <div className="absolute inset-0 bg-primary/20 rounded-2xl rotate-3 group-hover:rotate-6 transition-transform duration-500" />
             <div className="relative rounded-2xl overflow-hidden border-2 border-primary/10 shadow-xl bg-card">
-              <img 
-                src={profileImg} 
-                alt="Abdhesh" 
+              <img
+                src={profileImg}
+                alt="Abdhesh"
                 className="w-full h-auto object-cover aspect-[4/5]"
               />
             </div>
@@ -66,49 +38,6 @@ export default function About() {
             </p>
           </div>
         </motion.div>
-
-        <div id="skills" className="space-y-12 scroll-mt-24">
-          <div className="text-center">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4">Skills</h2>
-            <div className="h-1.5 w-20 bg-primary mx-auto rounded-full mb-12" />
-          </div>
-          
-          {isLoading ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-                <div key={i} className="h-24 bg-muted animate-pulse rounded-2xl" />
-              ))}
-            </div>
-          ) : (
-            <motion.div 
-              variants={container}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true }}
-              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
-            >
-              {skills?.map((skill) => (
-                <motion.div 
-                  key={skill.id} 
-                  variants={item} 
-                  className="group relative bg-card p-6 rounded-2xl border border-border shadow-sm hover:border-primary/50 hover:shadow-md hover:-translate-y-1 transition-all duration-300 overflow-hidden"
-                >
-                  <div className="absolute top-0 left-0 w-1 h-full bg-primary/10 group-hover:bg-primary transition-colors" />
-                  <div className="flex flex-col items-center text-center gap-3">
-                    <div className="p-3 bg-primary/5 rounded-xl text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
-                      {/* Dynamically render Lucide icons or fallback */}
-                      <Code className="w-6 h-6" />
-                    </div>
-                    <h4 className="font-semibold text-lg">{skill.name}</h4>
-                    <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                      {skill.category}
-                    </span>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
-        </div>
       </div>
     </section>
   );

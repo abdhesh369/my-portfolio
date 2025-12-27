@@ -10,7 +10,7 @@ import {
   type Experience,
   type Message,
   type InsertMessage,
-} from "../shared/schema";
+} from "../../shared/schema";
 
 export interface IStorage {
   getProjects(): Promise<Project[]>;
@@ -22,7 +22,7 @@ export interface IStorage {
 export class DatabaseStorage implements IStorage {
   async getProjects(): Promise<Project[]> {
     const result = await db.select().from(projects);
-    
+
     // Parse techStack from JSON string to array
     return result.map(project => ({
       ...project,

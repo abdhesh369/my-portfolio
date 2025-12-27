@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Download, Github, Linkedin, Mail } from "lucide-react";
 import Typewriter from "typewriter-effect";
+import profileImg from "@assets/images/Myphoto.jpg";
 
 export default function Hero() {
   const scrollToContact = () => {
@@ -108,8 +109,15 @@ export default function Hero() {
             className="relative hidden lg:block"
           >
             <div className="relative z-10 rounded-3xl overflow-hidden border border-border shadow-2xl shadow-primary/10 aspect-square max-w-md mx-auto rotate-3 hover:rotate-0 transition-all duration-500 bg-card">
-              {/* Abstract code/tech illustration or placeholder */}
-              <div className="absolute inset-0 bg-gradient-to-br from-card via-card to-muted p-8 flex flex-col justify-between">
+              {/* Your photo as background */}
+              <img 
+                src={profileImg} 
+                alt="Abdhesh" 
+                className="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-overlay"
+              />
+              
+              {/* Overlay content */}
+              <div className="absolute inset-0 bg-gradient-to-br from-card/90 via-card/80 to-muted/90 p-8 flex flex-col justify-between">
                 <div className="flex gap-2">
                   <div className="w-3 h-3 rounded-full bg-red-500/80" />
                   <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
@@ -130,13 +138,6 @@ export default function Hero() {
                   </div>
                 </div>
               </div>
-              
-              {/* Use actual image if available from Unsplash */}
-              {/* <img 
-                src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=80" 
-                alt="Coding Setup" 
-                className="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-overlay"
-              /> */}
             </div>
             
             {/* Floating Elements */}

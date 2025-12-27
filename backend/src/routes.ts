@@ -5,7 +5,7 @@ import { storage } from "./storage"; // backend/storage.ts
 import { api } from "@shared/routes"; // shared/routes.ts
 import { z } from "zod";
 import { db } from "./db"; // backend/db.ts
-import { projects, skills, experiences } from "../shared/schema"; // shared/schema.ts
+import { projects, skills, experiences } from "../../shared/schema"; // shared/schema.ts
 
 export async function registerRoutes(
   httpServer: Server,
@@ -19,7 +19,7 @@ export async function registerRoutes(
     // Parse techStack JSON string to array
     const parsedData = data.map(project => ({
       ...project,
-      techStack: JSON.parse(project.techStack),
+      techStack: JSON.parse(project.techStack) as string[],
     }));
 
     res.json(parsedData);
