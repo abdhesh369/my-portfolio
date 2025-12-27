@@ -1,4 +1,5 @@
-import { pgTable, text, serial } from "drizzle-orm/pg-core";
+// shared/schema.ts
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -6,11 +7,11 @@ import { z } from "zod";
 /* Tables */
 /* ---------------------------------- */
 
-export const projects = pgTable("projects", {
-  id: serial("id").primaryKey(),
+export const projects = sqliteTable("projects", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   title: text("title").notNull(),
   description: text("description").notNull(),
-  techStack: text("tech_stack").array().notNull(),
+  techStack: text("tech_stack").notNull(), // store as JSON string
   imageUrl: text("image_url").notNull(),
   githubUrl: text("github_url"),
   liveUrl: text("live_url"),
@@ -22,15 +23,15 @@ export const projects = pgTable("projects", {
   learnings: text("learnings"),
 });
 
-export const skills = pgTable("skills", {
-  id: serial("id").primaryKey(),
+export const skills = sqliteTable("skills", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
   category: text("category").notNull(),
   icon: text("icon"),
 });
 
-export const experiences = pgTable("experiences", {
-  id: serial("id").primaryKey(),
+export const experiences = sqliteTable("experiences", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   role: text("role").notNull(),
   organization: text("organization").notNull(),
   period: text("period").notNull(),
@@ -38,8 +39,8 @@ export const experiences = pgTable("experiences", {
   type: text("type").notNull(),
 });
 
-export const messages = pgTable("messages", {
-  id: serial("id").primaryKey(),
+export const messages = sqliteTable("messages", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
   email: text("email").notNull(),
   phone: text("phone"),
@@ -59,7 +60,11 @@ export const messageSchema = createSelectSchema(messages);
 /* Insert Schemas (with validation) */
 /* ---------------------------------- */
 
-export const insertProjectSchema = createInsertSchema(projects).omit({ id: true });
+export const insertProjectSchema = createInsertSchema(projects)
+  .omit({ id: true })
+  .extend({
+    techStack: z.array(z.string()), // convert array to JSON when inserting
+  });
 
 export const insertSkillSchema = createInsertSchema(skills).omit({ id: true });
 
@@ -77,11 +82,14 @@ export const insertMessageSchema = createInsertSchema(messages)
 /* Types */
 /* ---------------------------------- */
 
-export type Project = typeof projects.$inferSelect;
+export type Project = typeof projects.$inferSelect & { techStack: string[] };
 export type InsertProject = z.infer<typeof insertProjectSchema>;
 
 export type Skill = typeof skills.$inferSelect;
+export type InsertSkill = z.infer<typeof insertSkillSchema>;
+
 export type Experience = typeof experiences.$inferSelect;
+export type InsertExperience = z.infer<typeof insertExperienceSchema>;
 
 export type Message = typeof messages.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;

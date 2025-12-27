@@ -24,14 +24,20 @@ export default function CodeAndPractice() {
     fetch("https://api.github.com/users/abdhesh369/events/public")
       .then(res => res.json())
       .then((data: GitHubEvent[]) => {
+        if (!Array.isArray(data)) {
+          console.error("GitHub API returned non-array data:", data);
+          return;
+        }
         const filtered = data
-          .filter(e => e.type === "PushEvent")
-          .flatMap(e =>
-            e.payload.commits.map(c => ({
+          .filter(e => e && e.type === "PushEvent")
+          .flatMap(e => {
+            const commits = e.payload?.commits;
+            if (!Array.isArray(commits)) return [];
+            return commits.map(c => ({
               task: c.message,
               time: new Date(e.created_at).toLocaleString(),
-            }))
-          )
+            }));
+          })
           .slice(0, 3);
         setEvents(filtered);
       })

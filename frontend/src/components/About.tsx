@@ -2,7 +2,8 @@ import { motion } from "framer-motion";
 import { useSkills } from "@/hooks/use-portfolio";
 import { Code, Server, Cpu, Layers, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import profileImg from "@assets/images/Myphoto.jpg";
+
+const profileImg = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=500&fit=crop";
 
 export default function About() {
   const { data: skills, isLoading } = useSkills();
@@ -30,17 +31,8 @@ export default function About() {
   };
 
   return (
-    <section id="about" className="section-container bg-muted/30">
+    <section id="about" className="section-container bg-muted/30 scroll-mt-20">
       <div className="text-center mb-16 relative">
-        <Button 
-          variant="outline" 
-          size="icon" 
-          className="absolute left-0 top-0 rounded-full hover-elevate"
-          onClick={scrollToHero}
-          aria-label="Back to top"
-        >
-          <Home className="w-4 h-4" />
-        </Button>
         <h2 className="text-3xl md:text-5xl font-bold mb-4">About Me</h2>
         <div className="h-1.5 w-20 bg-primary mx-auto rounded-full" />
       </div>
@@ -72,26 +64,13 @@ export default function About() {
             <p className="text-lg text-muted-foreground leading-relaxed">
               While I study engineering principles by day, I spend my nights building practical software solutions. I focus on clean architecture, performance optimization, and creating intuitive user experiences.
             </p>
-            
-            <div className="grid grid-cols-2 gap-4 pt-4">
-              <div className="p-4 bg-card rounded-xl border border-border">
-                <Code className="w-8 h-8 text-primary mb-2" />
-                <h4 className="font-semibold">Frontend</h4>
-                <p className="text-sm text-muted-foreground">React, TypeScript, Tailwind</p>
-              </div>
-              <div className="p-4 bg-card rounded-xl border border-border">
-                <Server className="w-8 h-8 text-primary mb-2" />
-                <h4 className="font-semibold">Backend</h4>
-                <p className="text-sm text-muted-foreground">Node.js, PostgreSQL, Go</p>
-              </div>
-            </div>
           </div>
         </motion.div>
 
-        <div id="skills" className="space-y-12">
+        <div id="skills" className="space-y-12 scroll-mt-24">
           <div className="text-center">
-            <h3 className="text-3xl font-bold mb-2">Skills</h3>
-            <div className="h-1.5 w-16 bg-primary mx-auto rounded-full mb-12" />
+            <h2 className="text-3xl md:text-5xl font-bold mb-4">Skills</h2>
+            <div className="h-1.5 w-20 bg-primary mx-auto rounded-full mb-12" />
           </div>
           
           {isLoading ? (

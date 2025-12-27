@@ -1,17 +1,20 @@
+// backend/index.ts
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
-import { serveStatic } from "./static";
+import { registerRoutes } from "./routes"; // ensure routes.ts is in backend/
+import { serveStatic } from "./static";    // ensure static.ts is in backend/
 import { createServer } from "http";
 
 const app = express();
 const httpServer = createServer(app);
 
+// Extend IncomingMessage for rawBody
 declare module "http" {
   interface IncomingMessage {
     rawBody: unknown;
   }
 }
 
+// Middleware to parse JSON and capture raw body
 app.use(
   express.json({
     verify: (req, _res, buf) => {
@@ -22,6 +25,7 @@ app.use(
 
 app.use(express.urlencoded({ extended: false }));
 
+// Logging utility
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
     hour: "numeric",
@@ -29,10 +33,10 @@ export function log(message: string, source = "express") {
     second: "2-digit",
     hour12: true,
   });
-
   console.log(`${formattedTime} [${source}] ${message}`);
 }
 
+// Request logging middleware for /api routes
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -51,7 +55,6 @@ app.use((req, res, next) => {
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
-
       log(logLine);
     }
   });
@@ -60,30 +63,26 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Register your routes
   await registerRoutes(httpServer, app);
 
+  // Global error handler
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-
     res.status(status).json({ message });
-    throw err;
+    // Do NOT throw the error, Express has already handled response
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
+  // Serve static files in production, Vite setup in development
   if (process.env.NODE_ENV === "production") {
     serveStatic(app);
   } else {
-    const { setupVite } = await import("./vite");
+    const { setupVite } = await import("./vite"); // ensure vite.ts is in backend/
     await setupVite(httpServer, app);
   }
 
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
+  // Start HTTP server
   const port = parseInt(process.env.PORT || "5000", 10);
   httpServer.listen(
     {
@@ -92,7 +91,7 @@ app.use((req, res, next) => {
       reusePort: true,
     },
     () => {
-      log(`serving on port ${port}`);
+      log(`Server is running on port ${port}`);
     },
   );
 })();
