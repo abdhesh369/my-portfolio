@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Download, Github, Linkedin, Mail } from "lucide-react";
 import Typewriter from "typewriter-effect";
-import profileImg from "@assets/images/Myphoto.jpg";
+import profileImg from "../../assets/images/Myphoto.jpg";
 
 export default function Hero() {
   const scrollToContact = () => {

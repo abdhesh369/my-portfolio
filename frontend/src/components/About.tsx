@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { User, GraduationCap, MapPin, Mail, Briefcase, Code } from "lucide-react";
-import profileImg from "@assets/images/Myphoto.jpg";
+import profileImg from "../../assets/images/Myphoto.jpg";
 
 export default function About() {
   return (

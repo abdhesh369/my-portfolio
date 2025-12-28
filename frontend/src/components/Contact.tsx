@@ -18,15 +18,15 @@ import { Textarea } from "@/components/ui/textarea";
 export default function Contact() {
   const { mutate: sendMessage, isPending } = useSendMessage();
   
-  const form = useForm<InsertMessage>({
-    resolver: zodResolver(insertMessageSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      phone: "",
-      message: "",
-    },
-  });
+const form = useForm<InsertMessage>({
+  resolver: zodResolver(insertMessageSchema),
+  defaultValues: {
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
+  },
+});
 
   const onSubmit = (data: InsertMessage) => {
     sendMessage(data, {
