@@ -4,6 +4,7 @@ import type { Server } from "http";
 import { z } from "zod";
 import { api } from "../../shared/routes";
 import { storage } from "./storage";
+import { seedDatabase } from "./seed";
 
 export async function registerRoutes(httpServer: Server, app: Express): Promise<Server> {
   // ------------------- GET ROUTES -------------------
@@ -39,65 +40,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
-  // ------------------- SEED DATABASE -------------------
-  await seedDatabase();
+  // ------------------- SEED DATABASE (SAFE) -------------------
+  seedDatabase()
+    .then(() => console.log("Database seeding checked/completed."))
+    .catch(err => console.error("Database seeding error:", err));
 
   return httpServer;
-}
-
-// ------------------- SEED DATABASE -------------------
-async function seedDatabase() {
-  try {
-    const projectsData = await storage.getProjects();
-    if (projectsData.length > 0) return;
-
-    console.log("Seeding database...");
-
-    // Seed projects
-    // Only update the seedDatabase function
-    await storage.createProject({
-      title: "Calculator Application",
-      description: "A comprehensive calculator with scientific functions.",
-      techStack: ["React", "CSS"], // ✅ array
-      imageUrl: "https://images.unsplash.com/photo-1587145820266-a5951ee1f620?q=80&w=800&auto=format&fit=crop",
-      category: "Utility",
-      githubUrl: "https://github.com",
-      liveUrl: "",
-      problemStatement: "Users needed a convenient way to perform scientific calculations.",
-      motivation: "Built to demonstrate complex state management in React.",
-      systemDesign: "Component-based React architecture with utility math functions.",
-      challenges: "Implementing correct parenthesis evaluation.",
-      learnings: "Improved React state and event handling.",
-    });
-
-
-
-    // Seed skills
-    await storage.createSkill({ name: "C", category: "Languages", icon: "Code" });
-    await storage.createSkill({ name: "C++", category: "Languages", icon: "Code2" });
-    await storage.createSkill({ name: "Python", category: "Languages", icon: "Snake" });
-    await storage.createSkill({ name: "JavaScript", category: "Web", icon: "FileJson" });
-
-    // Seed experiences
-    await storage.createExperience({
-      role: "Student",
-      organization: "Tribhuvan University",
-      period: "2024 – 2028",
-      description: "B.E. in Electronics & Communication Engineering",
-      type: "Education",
-    });
-
-    // Seed a test message
-    await storage.createMessage({
-      name: "Seed User",
-      email: "seed@example.com",
-      subject: "Seed",
-      message: "Seeding initial message",
-    });
-
-    console.log("✅ Database seeded successfully");
-  } catch (err) {
-    console.error("❌ Database seeding failed:", err);
-    throw err;
-  }
 }
