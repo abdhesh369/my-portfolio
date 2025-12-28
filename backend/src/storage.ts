@@ -1,4 +1,4 @@
-// backend/storage.ts
+// backend/src/storage.ts
 import { db } from "./db";
 import {
   projects,
@@ -17,57 +17,49 @@ export interface IStorage {
   getSkills(): Promise<Skill[]>;
   getExperiences(): Promise<Experience[]>;
   createMessage(message: InsertMessage): Promise<Message>;
+  createProject(project: Omit<Project, "id">): Promise<Project>;
+  createSkill(skill: Omit<Skill, "id">): Promise<Skill>;
+  createExperience(exp: Omit<Experience, "id">): Promise<Experience>;
 }
 
 export class DatabaseStorage implements IStorage {
   async getProjects(): Promise<Project[]> {
-    try {
-      // Execute query with .all()
-      const result = db.select().from(projects).all();
-      console.log("Projects fetched, count:", result.length);
-
-      // Parse techStack from JSON string to array
-      return result.map(project => ({
-        ...project,
-        techStack: JSON.parse(project.techStack as string) as string[]
-      }));
-    } catch (error) {
-      console.error("Database error in getProjects:", error);
-      console.error("Error details:", error instanceof Error ? error.stack : String(error));
-      throw new Error(`Failed to fetch projects: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const result = await db.select().from(projects).all();
+    return result.map(p => ({ ...p, techStack: JSON.parse(p.techStack as string) }));
   }
 
   async getSkills(): Promise<Skill[]> {
-    try {
-      // Execute query with .all()
-      const result = db.select().from(skills).all();
-      console.log("Skills fetched successfully, count:", result.length);
-      return result;
-    } catch (error) {
-      console.error("Database error in getSkills:", error);
-      console.error("Error details:", error instanceof Error ? error.stack : String(error));
-      throw new Error(`Failed to fetch skills: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return await db.select().from(skills).all();
   }
 
   async getExperiences(): Promise<Experience[]> {
-    try {
-      // Execute query with .all()
-      const result = db.select().from(experiences).all();
-      console.log("Experiences fetched successfully, count:", result.length);
-      return result;
-    } catch (error) {
-      console.error("Database error in getExperiences:", error);
-      throw new Error(`Failed to fetch experiences: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return await db.select().from(experiences).all();
   }
 
   async createMessage(insertMessage: InsertMessage): Promise<Message> {
-    const result = db.insert(messages).values(insertMessage).returning().get();
-    return result;
+    return await db.insert(messages).values(insertMessage).returning().get();
+  }
+
+  async createProject(project: Omit<Project, "id">): Promise<Project> {
+  // Convert techStack array to string for DB
+  const inserted = await db
+    .insert(projects)
+    .values({ ...project, techStack: JSON.stringify(project.techStack) })
+    .returning()
+    .get();
+
+  // Convert back to array before returning
+  return { ...inserted, techStack: JSON.parse(inserted.techStack as string) };
+}
+
+
+  async createSkill(skill: Omit<Skill, "id">): Promise<Skill> {
+    return await db.insert(skills).values(skill).returning().get();
+  }
+
+  async createExperience(exp: Omit<Experience, "id">): Promise<Experience> {
+    return await db.insert(experiences).values(exp).returning().get();
   }
 }
 
-// Singleton instance for easy import
 export const storage = new DatabaseStorage();

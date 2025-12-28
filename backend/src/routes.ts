@@ -1,68 +1,32 @@
-// backend/routes.ts
+// backend/src/routes.ts
 import type { Express } from "express";
 import type { Server } from "http";
-import { storage } from "./storage"; // backend/storage.ts
-import { api } from "@shared/routes"; // shared/routes.ts
 import { z } from "zod";
-import { db } from "./db"; // backend/db.ts
-import { projects, skills, experiences } from "../../shared/schema"; // shared/schema.ts
+import { api } from "../../shared/routes";
+import { storage } from "./storage";
 
-export async function registerRoutes(
-  httpServer: Server,
-  app: Express
-): Promise<Server> {
-
-  // GET /projects
-  app.get(api.projects.list.path, async (_req, res) => {
+export async function registerRoutes(httpServer: Server, app: Express): Promise<Server> {
+  // ------------------- GET ROUTES -------------------
+  const createGetHandler = <T>(getter: () => Promise<T>) => async (_req: any, res: any) => {
     try {
-      // getProjects() already parses techStack from JSON string to array
-      const data = await storage.getProjects();
+      const data = await getter();
       res.json(data);
     } catch (err) {
-      console.error("Error fetching projects:", err);
-      console.error("Error details:", err instanceof Error ? err.stack : String(err));
-      res.status(500).json({ 
-        message: "Failed to fetch projects",
-        error: err instanceof Error ? err.message : String(err)
-      });
+      console.error("Error fetching data:", err);
+      res.status(500).json({ message: "Failed to fetch data" });
     }
-  });
+  };
 
-  // GET /skills
-  app.get(api.skills.list.path, async (_req, res) => {
-    try {
-      const data = await storage.getSkills();
-      res.json(data);
-    } catch (err) {
-      console.error("Error fetching skills:", err);
-      console.error("Error details:", err instanceof Error ? err.stack : String(err));
-      res.status(500).json({ 
-        message: "Failed to fetch skills",
-        error: err instanceof Error ? err.message : String(err)
-      });
-    }
-  });
+  app.get(api.projects.list.path, createGetHandler(() => storage.getProjects()));
+  app.get(api.skills.list.path, createGetHandler(() => storage.getSkills()));
+  app.get(api.experiences.list.path, createGetHandler(() => storage.getExperiences()));
 
-  // GET /experiences
-  app.get(api.experiences.list.path, async (_req, res) => {
-    try {
-      const data = await storage.getExperiences();
-      res.json(data);
-    } catch (err) {
-      console.error("Error fetching experiences:", err);
-      res.status(500).json({ message: "Failed to fetch experiences" });
-    }
-  });
-
-  // POST /messages
+  // ------------------- POST ROUTES -------------------
   app.post(api.messages.create.path, async (req, res) => {
     try {
       const input = api.messages.create.input.parse(req.body);
-      await storage.createMessage(input);
-      res.status(201).json({
-        success: true,
-        message: "Message sent successfully",
-      });
+      const message = await storage.createMessage(input);
+      res.status(201).json({ success: true, message: "Message sent successfully", data: message });
     } catch (err) {
       if (err instanceof z.ZodError) {
         return res.status(400).json({
@@ -71,126 +35,65 @@ export async function registerRoutes(
         });
       }
       console.error("Unexpected error:", err);
-      return res.status(500).json({ message: "Internal server error" });
+      res.status(500).json({ message: "Internal server error" });
     }
   });
 
-  // Seed database if empty
+  // ------------------- SEED DATABASE -------------------
   await seedDatabase();
 
   return httpServer;
 }
 
-/* ---------------- SEED DATABASE ---------------- */
-
+// ------------------- SEED DATABASE -------------------
 async function seedDatabase() {
   try {
-    // Check if tables exist by trying to query them
-    let existingProjects: any[] = [];
-    try {
-      existingProjects = await storage.getProjects();
-      console.log("Existing projects:", existingProjects.length);
-    } catch (error) {
-      console.log("Tables may not exist yet. Run 'npm run db:push' to create them.");
-      // If tables don't exist, we can't seed. The user needs to run db:push first.
-      return;
-    }
-
-    if (existingProjects.length > 0) return;
+    const projectsData = await storage.getProjects();
+    if (projectsData.length > 0) return;
 
     console.log("Seeding database...");
 
-    // Insert projects (convert techStack array to JSON string)
-    await db.insert(projects).values([
-      {
-        title: "Calculator Application",
-        description: "A comprehensive calculator with scientific functions.",
-        techStack: JSON.stringify(["React", "CSS"]),
-        imageUrl: "https://images.unsplash.com/photo-1587145820266-a5951ee1f620?q=80&w=800&auto=format&fit=crop",
-        category: "Utility",
-        githubUrl: "https://github.com",
-        problemStatement: "Users needed a convenient way to perform scientific calculations.",
-        motivation: "Built to demonstrate complex state management in React.",
-        systemDesign: "Component-based React architecture with utility math functions.",
-        challenges: "Implementing correct parenthesis evaluation.",
-        learnings: "Improved React state and event handling.",
-      },
-      {
-        title: "Student Record & Marksheet System",
-        description: "C++ based student record management system.",
-        techStack: JSON.stringify(["C++", "File Handling"]),
-        imageUrl: "https://images.unsplash.com/photo-1501504905252-473c47e087f8?q=80&w=800&auto=format&fit=crop",
-        category: "Academic",
-        githubUrl: "https://github.com",
-        problemStatement: "Manual marksheet management was inefficient.",
-        motivation: "Academic project to practice file persistence.",
-        systemDesign: "Binary file storage with structured records.",
-        challenges: "Maintaining data consistency.",
-        learnings: "Strong understanding of file I/O in C++.",
-      },
-      {
-        title: "8085 Assembly Programs",
-        description: "Optimized assembly programs for 8085.",
-        techStack: JSON.stringify(["8085", "Assembly"]),
-        imageUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop",
-        category: "System",
-        githubUrl: "https://github.com",
-        problemStatement: "Low-level programming requires hands-on practice.",
-        motivation: "Understand CPU instruction cycles.",
-        systemDesign: "Reusable arithmetic subroutines.",
-        challenges: "Limited registers and instructions.",
-        learnings: "Deep understanding of CPU architecture.",
-      },
-      {
-        title: "Python Utilities & Scripts",
-        description: "Automation scripts for productivity.",
-        techStack: JSON.stringify(["Python"]),
-        imageUrl: "https://images.unsplash.com/photo-1526379095098-d400fd0bf935?q=80&w=800&auto=format&fit=crop",
-        category: "Utility",
-        githubUrl: "https://github.com",
-        problemStatement: "Manual repetitive tasks wasted time.",
-        motivation: "Improve productivity via automation.",
-        systemDesign: "Modular CLI-based scripts.",
-        challenges: "Handling edge cases in file formats.",
-        learnings: "Advanced Python standard library usage.",
-      },
-      {
-        title: "Django Backend Systems",
-        description: "Scalable backend architecture using Django.",
-        techStack: JSON.stringify(["Python", "Django", "PostgreSQL"]),
-        imageUrl: "https://images.unsplash.com/photo-1555099962-4199c345e5dd?q=80&w=800&auto=format&fit=crop",
-        category: "Backend",
-        githubUrl: "https://github.com",
-        problemStatement: "Need for scalable backend systems.",
-        motivation: "Learn real-world backend design.",
-        systemDesign: "REST APIs with relational database.",
-        challenges: "Query optimization.",
-        learnings: "ORM optimization and API security.",
-      },
-    ]);
+    // Seed projects
+    // Only update the seedDatabase function
+    await storage.createProject({
+      title: "Calculator Application",
+      description: "A comprehensive calculator with scientific functions.",
+      techStack: ["React", "CSS"], // ✅ array
+      imageUrl: "https://images.unsplash.com/photo-1587145820266-a5951ee1f620?q=80&w=800&auto=format&fit=crop",
+      category: "Utility",
+      githubUrl: "https://github.com",
+      liveUrl: "",
+      problemStatement: "Users needed a convenient way to perform scientific calculations.",
+      motivation: "Built to demonstrate complex state management in React.",
+      systemDesign: "Component-based React architecture with utility math functions.",
+      challenges: "Implementing correct parenthesis evaluation.",
+      learnings: "Improved React state and event handling.",
+    });
 
-    // Insert skills
-    await db.insert(skills).values([
-      { name: "C", category: "Languages", icon: "Code" },
-      { name: "C++", category: "Languages", icon: "Code2" },
-      { name: "Python", category: "Languages", icon: "Snake" },
-      { name: "Java", category: "Languages", icon: "Coffee" },
-      { name: "HTML/CSS", category: "Web", icon: "Layout" },
-      { name: "JavaScript", category: "Web", icon: "FileJson" },
-      { name: "8085 Microprocessor", category: "System", icon: "Cpu" },
-      { name: "Data Structures", category: "Core", icon: "Database" },
-    ]);
 
-    // Insert experiences
-    await db.insert(experiences).values([
-      {
-        role: "Student",
-        organization: "Tribhuvan University",
-        period: "2024 – 2028",
-        description: "B.E. in Electronics & Communication Engineering",
-        type: "Education",
-      },
-    ]);
+
+    // Seed skills
+    await storage.createSkill({ name: "C", category: "Languages", icon: "Code" });
+    await storage.createSkill({ name: "C++", category: "Languages", icon: "Code2" });
+    await storage.createSkill({ name: "Python", category: "Languages", icon: "Snake" });
+    await storage.createSkill({ name: "JavaScript", category: "Web", icon: "FileJson" });
+
+    // Seed experiences
+    await storage.createExperience({
+      role: "Student",
+      organization: "Tribhuvan University",
+      period: "2024 – 2028",
+      description: "B.E. in Electronics & Communication Engineering",
+      type: "Education",
+    });
+
+    // Seed a test message
+    await storage.createMessage({
+      name: "Seed User",
+      email: "seed@example.com",
+      subject: "Seed",
+      message: "Seeding initial message",
+    });
 
     console.log("✅ Database seeded successfully");
   } catch (err) {

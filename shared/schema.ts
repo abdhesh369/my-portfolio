@@ -8,10 +8,10 @@ export const projects = sqliteTable("projects", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   title: text("title").notNull(),
   description: text("description").notNull(),
-  techStack: text("tech_stack").notNull(), // Stored as JSON string in DB
+  techStack: text("tech_stack").notNull(),
   imageUrl: text("image_url").notNull(),
   githubUrl: text("github_url"),
-  liveUrl: text("live_url"),
+  liveUrl: text("live_url").default(""),
   category: text("category").notNull(),
   problemStatement: text("problem_statement"),
   motivation: text("motivation"),
@@ -20,20 +20,13 @@ export const projects = sqliteTable("projects", {
   learnings: text("learnings"),
 });
 
-// Infer the DB type (techStack is string here)
-type ProjectFromDB = typeof projects.$inferSelect;
-
-// Export the application type with parsed techStack
-export type Project = Omit<ProjectFromDB, 'techStack'> & {
-  techStack: string[]; // Array in application code
-};
-
+export type Project = Omit<typeof projects.$inferSelect, "techStack"> & { techStack: string[] };
 export type InsertProject = typeof projects.$inferInsert;
 
-// Zod schemas for validation
 export const projectSchema = createSelectSchema(projects).extend({
   techStack: z.array(z.string()),
-});export const insertProjectSchema = createInsertSchema(projects);
+});
+export const insertProjectSchema = createInsertSchema(projects);
 
 // ===== SKILLS =====
 export const skills = sqliteTable("skills", {
@@ -46,7 +39,6 @@ export const skills = sqliteTable("skills", {
 export type Skill = typeof skills.$inferSelect;
 export type InsertSkill = typeof skills.$inferInsert;
 
-// Zod schemas for validation
 export const skillSchema = createSelectSchema(skills);
 export const insertSkillSchema = createInsertSchema(skills);
 
@@ -63,7 +55,6 @@ export const experiences = sqliteTable("experiences", {
 export type Experience = typeof experiences.$inferSelect;
 export type InsertExperience = typeof experiences.$inferInsert;
 
-// Zod schemas for validation
 export const experienceSchema = createSelectSchema(experiences);
 export const insertExperienceSchema = createInsertSchema(experiences);
 
@@ -82,7 +73,6 @@ export const messages = sqliteTable("messages", {
 export type Message = typeof messages.$inferSelect;
 export type InsertMessage = typeof messages.$inferInsert;
 
-// Zod schemas for validation
 export const messageSchema = createSelectSchema(messages);
 export const insertMessageSchema = createInsertSchema(messages).omit({
   id: true,
