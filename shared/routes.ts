@@ -24,16 +24,38 @@ export const errorSchemas = {
       )
       .optional(),
   }),
-  notFound: z.object({
+  badRequest: z.object({
     message: z.string(),
   }),
-  badRequest: z.object({
+  unauthorized: z.object({
+    message: z.string(),
+  }),
+  forbidden: z.object({
+    message: z.string(),
+  }),
+  notFound: z.object({
     message: z.string(),
   }),
   internal: z.object({
     message: z.string(),
   }),
 };
+
+// ==================== SHARED RESPONSE SCHEMAS ====================
+
+const createSuccessResponse = <T extends z.ZodTypeAny>(dataSchema: T) =>
+  z.object({
+    success: z.boolean(),
+    message: z.string(),
+    data: dataSchema,
+  });
+
+const listSuccessResponse = <T extends z.ZodTypeAny>(itemSchema: T) =>
+  z.object({
+    success: z.boolean(),
+    data: z.array(itemSchema),
+    count: z.number(),
+  });
 
 // ==================== API DEFINITION ====================
 
@@ -43,6 +65,7 @@ export const api = {
     list: {
       method: "GET" as const,
       path: "/api/projects",
+      description: "List all projects (public)",
       responses: {
         200: z.array(projectSchema),
         500: errorSchemas.internal,
@@ -51,6 +74,7 @@ export const api = {
     get: {
       method: "GET" as const,
       path: "/api/projects/:id",
+      description: "Get single project by ID (public)",
       responses: {
         200: projectSchema,
         400: errorSchemas.badRequest,
@@ -61,20 +85,28 @@ export const api = {
     create: {
       method: "POST" as const,
       path: "/api/projects",
+      description: "Create new project (admin only)",
       input: insertProjectApiSchema,
+      requiresAuth: true,
       responses: {
-        201: projectSchema,
+        201: createSuccessResponse(projectSchema),
         400: errorSchemas.validation,
+        401: errorSchemas.unauthorized,
+        403: errorSchemas.forbidden,
         500: errorSchemas.internal,
       },
     },
     update: {
       method: "PUT" as const,
       path: "/api/projects/:id",
+      description: "Update project by ID (admin only)",
       input: insertProjectApiSchema.partial(),
+      requiresAuth: true,
       responses: {
-        200: projectSchema,
+        200: createSuccessResponse(projectSchema),
         400: errorSchemas.validation,
+        401: errorSchemas.unauthorized,
+        403: errorSchemas.forbidden,
         404: errorSchemas.notFound,
         500: errorSchemas.internal,
       },
@@ -82,9 +114,13 @@ export const api = {
     delete: {
       method: "DELETE" as const,
       path: "/api/projects/:id",
+      description: "Delete project by ID (admin only)",
+      requiresAuth: true,
       responses: {
         204: z.void(),
         400: errorSchemas.badRequest,
+        401: errorSchemas.unauthorized,
+        403: errorSchemas.forbidden,
         404: errorSchemas.notFound,
         500: errorSchemas.internal,
       },
@@ -96,6 +132,7 @@ export const api = {
     list: {
       method: "GET" as const,
       path: "/api/skills",
+      description: "List all skills (public, cached)",
       responses: {
         200: z.array(skillSchema),
         500: errorSchemas.internal,
@@ -104,6 +141,7 @@ export const api = {
     get: {
       method: "GET" as const,
       path: "/api/skills/:id",
+      description: "Get single skill by ID (public)",
       responses: {
         200: skillSchema,
         400: errorSchemas.badRequest,
@@ -114,20 +152,28 @@ export const api = {
     create: {
       method: "POST" as const,
       path: "/api/skills",
+      description: "Create new skill (admin only)",
       input: insertSkillApiSchema,
+      requiresAuth: true,
       responses: {
-        201: skillSchema,
+        201: createSuccessResponse(skillSchema),
         400: errorSchemas.validation,
+        401: errorSchemas.unauthorized,
+        403: errorSchemas.forbidden,
         500: errorSchemas.internal,
       },
     },
     update: {
       method: "PUT" as const,
       path: "/api/skills/:id",
+      description: "Update skill by ID (admin only)",
       input: insertSkillApiSchema.partial(),
+      requiresAuth: true,
       responses: {
-        200: skillSchema,
+        200: createSuccessResponse(skillSchema),
         400: errorSchemas.validation,
+        401: errorSchemas.unauthorized,
+        403: errorSchemas.forbidden,
         404: errorSchemas.notFound,
         500: errorSchemas.internal,
       },
@@ -135,9 +181,13 @@ export const api = {
     delete: {
       method: "DELETE" as const,
       path: "/api/skills/:id",
+      description: "Delete skill by ID (admin only)",
+      requiresAuth: true,
       responses: {
         204: z.void(),
         400: errorSchemas.badRequest,
+        401: errorSchemas.unauthorized,
+        403: errorSchemas.forbidden,
         404: errorSchemas.notFound,
         500: errorSchemas.internal,
       },
@@ -149,6 +199,7 @@ export const api = {
     list: {
       method: "GET" as const,
       path: "/api/experiences",
+      description: "List all experiences (public, cached)",
       responses: {
         200: z.array(experienceSchema),
         500: errorSchemas.internal,
@@ -157,6 +208,7 @@ export const api = {
     get: {
       method: "GET" as const,
       path: "/api/experiences/:id",
+      description: "Get single experience by ID (public)",
       responses: {
         200: experienceSchema,
         400: errorSchemas.badRequest,
@@ -167,20 +219,28 @@ export const api = {
     create: {
       method: "POST" as const,
       path: "/api/experiences",
+      description: "Create new experience (admin only)",
       input: insertExperienceApiSchema,
+      requiresAuth: true,
       responses: {
-        201: experienceSchema,
+        201: createSuccessResponse(experienceSchema),
         400: errorSchemas.validation,
+        401: errorSchemas.unauthorized,
+        403: errorSchemas.forbidden,
         500: errorSchemas.internal,
       },
     },
     update: {
       method: "PUT" as const,
       path: "/api/experiences/:id",
+      description: "Update experience by ID (admin only)",
       input: insertExperienceApiSchema.partial(),
+      requiresAuth: true,
       responses: {
-        200: experienceSchema,
+        200: createSuccessResponse(experienceSchema),
         400: errorSchemas.validation,
+        401: errorSchemas.unauthorized,
+        403: errorSchemas.forbidden,
         404: errorSchemas.notFound,
         500: errorSchemas.internal,
       },
@@ -188,9 +248,13 @@ export const api = {
     delete: {
       method: "DELETE" as const,
       path: "/api/experiences/:id",
+      description: "Delete experience by ID (admin only)",
+      requiresAuth: true,
       responses: {
         204: z.void(),
         400: errorSchemas.badRequest,
+        401: errorSchemas.unauthorized,
+        403: errorSchemas.forbidden,
         404: errorSchemas.notFound,
         500: errorSchemas.internal,
       },
@@ -202,17 +266,25 @@ export const api = {
     list: {
       method: "GET" as const,
       path: "/api/messages",
+      description: "List all messages (admin only)",
+      requiresAuth: true,
       responses: {
         200: z.array(messageSchema),
+        401: errorSchemas.unauthorized,
+        403: errorSchemas.forbidden,
         500: errorSchemas.internal,
       },
     },
     get: {
       method: "GET" as const,
       path: "/api/messages/:id",
+      description: "Get single message by ID (admin only)",
+      requiresAuth: true,
       responses: {
         200: messageSchema,
         400: errorSchemas.badRequest,
+        401: errorSchemas.unauthorized,
+        403: errorSchemas.forbidden,
         404: errorSchemas.notFound,
         500: errorSchemas.internal,
       },
@@ -220,23 +292,27 @@ export const api = {
     create: {
       method: "POST" as const,
       path: "/api/messages",
+      description: "Submit contact form (public, rate-limited)",
       input: insertMessageApiSchema,
       responses: {
-        201: z.object({
-          success: z.boolean(),
-          message: z.string(),
-          data: messageSchema,
-        }),
+        201: createSuccessResponse(messageSchema),
         400: errorSchemas.validation,
+        429: z.object({
+          message: z.string(),
+        }),
         500: errorSchemas.internal,
       },
     },
     delete: {
       method: "DELETE" as const,
       path: "/api/messages/:id",
+      description: "Delete message by ID (admin only)",
+      requiresAuth: true,
       responses: {
         204: z.void(),
         400: errorSchemas.badRequest,
+        401: errorSchemas.unauthorized,
+        403: errorSchemas.forbidden,
         404: errorSchemas.notFound,
         500: errorSchemas.internal,
       },
