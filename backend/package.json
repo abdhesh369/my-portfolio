@@ -5,15 +5,15 @@
   "private": true,
   "scripts": {
     "dev": "tsx src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js"
+    "build": "tsc --project tsconfig.json",
+    "start": "cross-env NODE_ENV=production node dist/index.js"
   },
   "dependencies": {
-    "better-sqlite3": "^12.5.0",
+    "express": "^4.21.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
+    "better-sqlite3": "^12.5.0",
     "drizzle-orm": "^0.45.1",
-    "express": "^4.21.2",
     "express-session": "^1.18.1",
     "memorystore": "^1.6.7",
     "ws": "^8.18.0",
