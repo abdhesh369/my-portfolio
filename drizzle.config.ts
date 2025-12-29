@@ -15,5 +15,4 @@ export default defineConfig({
   },
   verbose: true,
   strict: true,
-  // breakpoints: true, // Enable if you want SQL breakpoints in migrations
 });

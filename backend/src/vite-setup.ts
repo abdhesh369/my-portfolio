@@ -1,11 +1,15 @@
-// backend/vite-setup.ts
-import { type Express } from "express";
+import type { Express } from "express";
+import type { Server } from "http";
 import { createServer } from "vite";
-import { type Server } from "http";
-import viteConfig from "../../vite.config";
-import fs from "fs";
+import { fileURLToPath } from "url";
 import path from "path";
+import fs from "fs";
 import { nanoid } from "nanoid";
+import viteConfig from "../../vite.config";
+
+// Fix __dirname for ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export async function setupVite(server: Server, app: Express) {
   const viteDevServer = await createServer({
@@ -13,24 +17,20 @@ export async function setupVite(server: Server, app: Express) {
     configFile: false,
     server: {
       middlewareMode: true,
-      hmr: { server }
+      hmr: { server },
     },
     appType: "custom",
   });
 
   app.use(viteDevServer.middlewares);
 
-  app.use("*", async (req, res, next) => {
+  // Handle all non-API routes - FIXED: Use regex instead of "*"
+  app.get(/^(?!\/api).*/, async (req, res, next) => {
     const url = req.originalUrl;
 
     try {
-      // Don't handle API routes
-      if (url.startsWith('/api')) {
-        return next();
-      }
-
       // Resolve paths from project root
-      const projectRoot = path.resolve(process.cwd());
+      const projectRoot = path.resolve(__dirname, "../..");
       const clientTemplate = path.join(projectRoot, "frontend", "index.html");
 
       if (!fs.existsSync(clientTemplate)) {
@@ -38,6 +38,8 @@ export async function setupVite(server: Server, app: Express) {
       }
 
       let template = await fs.promises.readFile(clientTemplate, "utf-8");
+      
+      // Add cache busting for dev
       template = template.replace(
         `src="/src/main.tsx"`,
         `src="/src/main.tsx?v=${nanoid()}"`

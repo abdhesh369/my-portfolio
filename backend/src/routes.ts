@@ -341,7 +341,7 @@ export async function registerRoutes(
     })
   );
 
-  // ==================== HEALTH & INFO ====================
+ // ==================== HEALTH & INFO ====================
 
   // API info endpoint
   app.get("/api", (_req, res) => {
@@ -357,6 +357,13 @@ export async function registerRoutes(
     });
   });
 
-  log(`Registered ${app._router.stack.filter((r: any) => r.route).length} routes`);
+  // Count and log registered routes safely
+  try {
+    const routeCount = app._router?.stack?.filter((r: any) => r.route)?.length ?? 0;
+    log(`Registered ${routeCount > 0 ? routeCount : 'multiple'} API routes`);
+  } catch (error) {
+    log('API routes registered successfully');
+  }
+
   return httpServer;
 }

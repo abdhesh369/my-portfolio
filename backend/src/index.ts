@@ -35,7 +35,7 @@ function log(message: string, source = "express") {
 
 // CORS Configuration
 const corsOptions = {
-  origin: process.env.NODE_ENV === "production" 
+  origin: process.env.NODE_ENV === "production"
     ? process.env.FRONTEND_URL || false // Set your production domain
     : ["http://localhost:5173", "http://localhost:4173"],
   credentials: true,
@@ -78,13 +78,13 @@ app.use((req, res, next) => {
     const duration = Date.now() - start;
     if (req.path.startsWith("/api")) {
       let logLine = `${req.method} ${req.path} ${res.statusCode} in ${duration}ms`;
-      
+
       // Only log response body in development
       if (process.env.NODE_ENV !== "production" && capturedJson) {
         const jsonStr = JSON.stringify(capturedJson);
         logLine += ` :: ${jsonStr.length > 200 ? jsonStr.substring(0, 200) + "..." : jsonStr}`;
       }
-      
+
       log(logLine);
     }
   });
@@ -94,8 +94,8 @@ app.use((req, res, next) => {
 
 // Health check
 app.get("/healthz", (_req, res) => {
-  res.status(200).json({ 
-    ok: true, 
+  res.status(200).json({
+    ok: true,
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || "development"
   });
@@ -105,7 +105,7 @@ app.get("/healthz", (_req, res) => {
 function setupGracefulShutdown() {
   const shutdown = async (signal: string) => {
     log(`${signal} received, starting graceful shutdown...`, "shutdown");
-    
+
     httpServer.close(() => {
       log("HTTP server closed", "shutdown");
       process.exit(0);
@@ -120,7 +120,7 @@ function setupGracefulShutdown() {
 
   process.on("SIGTERM", () => shutdown("SIGTERM"));
   process.on("SIGINT", () => shutdown("SIGINT"));
-  
+
   process.on("uncaughtException", (error) => {
     log(`Uncaught Exception: ${error.message}`, "error");
     console.error(error);
@@ -152,20 +152,21 @@ function setupGracefulShutdown() {
     log("API routes registered", "startup");
 
     // 3️⃣ Serve frontend in production
+    // 3️⃣ Serve frontend in production
     if (process.env.NODE_ENV === "production") {
       const frontendDist = path.resolve(__dirname, "../../dist/public");
-      
+
       app.use(express.static(frontendDist, {
         maxAge: "1y",
         etag: true,
         lastModified: true,
       }));
-      
+
       // SPA fallback - must be after API routes
-      app.get("*", (_req, res) => {
+      app.get(/^(?!\/api).*/, (_req, res) => {
         res.sendFile(path.join(frontendDist, "index.html"));
       });
-      
+
       log("Serving frontend from: " + frontendDist, "startup");
     } else {
       try {
@@ -178,24 +179,19 @@ function setupGracefulShutdown() {
       }
     }
 
-    // 4️⃣ 404 Handler for API routes
-    app.use("/api/*", (_req, res) => {
-      res.status(404).json({ message: "API endpoint not found" });
-    });
-
-    // 5️⃣ Global error handler (must be last)
+    // 4️⃣ Global error handler (must be last)
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
-      
+
       log(`Error ${status}: ${message}`, "error");
-      
+
       // Log stack trace in development
       if (process.env.NODE_ENV !== "production") {
         console.error(err.stack);
       }
-      
-      res.status(status).json({ 
+
+      res.status(status).json({
         message,
         ...(process.env.NODE_ENV !== "production" && { stack: err.stack })
       });
@@ -207,7 +203,7 @@ function setupGracefulShutdown() {
     // 7️⃣ Start server
     const port = parseInt(process.env.PORT || "5000", 10);
     const host = process.env.HOST || "0.0.0.0";
-    
+
     httpServer.listen(port, host, () => {
       log(`Server running on http://${host}:${port}`, "startup");
       log(`Environment: ${process.env.NODE_ENV || "development"}`, "startup");
