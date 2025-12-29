@@ -1,15 +1,14 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import type { Server } from "http";
 import { z } from "zod";
-import { api } from "@shared/routes";
 import { storage } from "./storage.js";
+import { api } from "../../shared/routes.js";
 import {
   insertProjectApiSchema,
   insertSkillApiSchema,
   insertExperienceApiSchema,
   insertMessageApiSchema,
-} from "@shared/schema";
-
+} from "../../shared/schema.js";
 // Logging utility
 function log(message: string, level: "info" | "error" | "warn" = "info") {
   const timestamp = new Date().toISOString();

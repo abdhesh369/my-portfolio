@@ -1,4 +1,4 @@
-import { storage } from "./storage";
+import { storage } from "./storage.js";
 
 // Logging utility (consistent with db.ts)
 function log(message: string, level: "info" | "error" | "warn" = "info") {
