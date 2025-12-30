@@ -31,7 +31,7 @@ const dbFile = path.resolve(dataDir, "database.sqlite");
 log(`Database file path: ${dbFile}`);
 
 // Initialize SQLite database
-let sqliteDb: Database;
+let sqliteDb: InstanceType<typeof Database>;
 try {
   sqliteDb = new Database(dbFile, {
     verbose: process.env.NODE_ENV !== "production" ? console.log : undefined,
@@ -67,7 +67,7 @@ try {
 export const db = drizzle(sqliteDb, { schema });
 
 // Export the raw SQLite instance for advanced queries
-export const sqlite = sqliteDb;
+export const sqlite: any = sqliteDb;
 
 // Export schema for use in other files
 export { schema };
