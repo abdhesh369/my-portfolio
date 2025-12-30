@@ -4,18 +4,13 @@ import path from "path";
 import { fileURLToPath } from "url";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
-// Fix __dirname for ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default defineConfig({
+  base: "/",
   plugins: [
-    react({
-      // jsxRuntime: 'automatic', // default
-      // babel: {
-      //   plugins: [], // Add babel plugins if needed
-      // },
-    }),
+    react(),
     runtimeErrorOverlay(),
   ],
   resolve: {
@@ -28,13 +23,12 @@ export default defineConfig({
   root: path.resolve(__dirname, "frontend"),
   publicDir: path.resolve(__dirname, "attached_assets"),
   build: {
-    outDir: path.resolve(__dirname, "dist"),
+    outDir: path.resolve(__dirname, "dist"),  // Absolute path to repo root dist/
     emptyOutDir: true,
     sourcemap: false,
     rollupOptions: {
       output: {
         manualChunks: {
-          // Split vendor chunks for better caching
           react: ["react", "react-dom"],
           ui: [
             "@radix-ui/react-dialog",
